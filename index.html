@@ -119,6 +119,10 @@
           <i class="fa-solid fa-brain"></i>
           <span>AI Weather</span>
         </a>
+        <a href="#" class="nav-item" data-tab="disease-ai">
+          <i class="fa-solid fa-microscope"></i>
+          <span>Crop Disease AI</span>
+        </a>
         <a href="#" class="nav-item" data-tab="logs">
           <i class="fa-solid fa-file-shield"></i>
           <span>System Logs</span>
@@ -679,6 +683,81 @@
           </div>
         </section>
 
+        <!-- Tab: Crop Disease AI -->
+        <section id="tab-disease-ai" class="tab-view">
+          <div class="tab-header-title">
+            <div class="tab-header-with-action">
+              <div>
+                <h2><i class="fa-solid fa-microscope" style="color: var(--primary); margin-right: 8px;"></i>Crop Disease AI Analysis</h2>
+                <p>Upload a photo of a crop to detect diseases and receive voice-guided treatment instructions.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card" style="grid-column: span 6;">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-camera"></i> Image Upload / Capture</h3>
+              </div>
+              <div class="card-body">
+                <div class="disease-upload-container" id="disease-upload-area">
+                  <input type="file" id="disease-image-input" accept="image/*" capture="environment" class="hidden">
+                  <div class="disease-upload-placeholder" id="disease-upload-placeholder">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <p>Click or tap to upload / capture image</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Supports mobile camera</p>
+                  </div>
+                  <img id="disease-image-preview" class="hidden" alt="Crop Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--border-radius-sm);">
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                  <button id="btn-reselect-image" class="btn-secondary hidden" style="padding: 10px 20px;"><i class="fa-solid fa-rotate-left"></i> Reselect</button>
+                  <button id="btn-analyze-disease" class="btn-primary" disabled style="width: auto; padding: 10px 30px;">
+                    <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Crop</span>
+                    <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: span 6;">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-clipboard-list" style="color: var(--green-accent);"></i> Diagnosis & Instructions</h3>
+                <button id="btn-listen-instructions" class="btn-secondary hidden" style="padding: 6px 12px; font-size: 0.85rem;"><i class="fa-solid fa-volume-high"></i> Listen</button>
+              </div>
+              <div class="card-body" style="position: relative; min-height: 250px; display: flex; flex-direction: column;">
+                
+                <div id="disease-initial-state" class="disease-state-view" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-leaf" style="font-size: 3rem; color: rgba(255,255,255,0.1); margin-bottom: 15px;"></i>
+                  <p style="color: var(--text-muted); text-align: center;">Upload an image and click analyze to see results here.</p>
+                </div>
+
+                <div id="disease-loading-state" class="disease-state-view hidden" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-microscope fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+                  <p style="color: var(--text-main); text-align: center;">AI is analyzing crop features...</p>
+                </div>
+
+                <div id="disease-result-state" class="disease-state-view hidden" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;">
+                  <div class="diagnosis-badge" id="diagnosis-name-badge" style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red-accent); color: white; padding: 8px 16px; border-radius: 30px; font-weight: bold;">
+                    Detected: <strong id="diagnosis-name">Unknown</strong>
+                  </div>
+                  <div style="width: 100%; margin-top: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Confidence Score:</span>
+                    <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                      <div id="diagnosis-confidence-bar" style="height: 100%; width: 0%; background: var(--green-accent); transition: width 1s ease;"></div>
+                    </div>
+                    <span id="diagnosis-confidence-text" style="font-size: 0.85rem; font-weight: bold; color: var(--green-accent);">0%</span>
+                  </div>
+                  <h4 style="margin-bottom: 15px; color: var(--text-main); font-size: 1rem;"><i class="fa-solid fa-kit-medical" style="color: var(--red-accent);"></i> Recommended Treatment Plan</h4>
+                  <div id="diagnosis-instructions" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--border-radius-sm); border-left: 3px solid var(--primary); width: 100%;">
+                    <!-- Instructions injected here -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Tab: System Logs -->
         <section id="tab-logs" class="tab-view">
           <div class="tab-header-title">
@@ -956,5 +1035,6 @@
   <script src="js/charts.js"></script>
   <script src="js/reports.js"></script>
   <script src="js/ai-weather.js"></script>
+  <script src="js/ai-disease.js"></script>
 </body>
 </html>
