@@ -11,7 +11,7 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="login-view">
 
@@ -114,14 +114,6 @@
         <a href="#" class="nav-item" data-tab="analytics">
           <i class="fa-solid fa-chart-line"></i>
           <span>Analytics</span>
-        </a>
-        <a href="#" class="nav-item" data-tab="ai-weather">
-          <i class="fa-solid fa-brain"></i>
-          <span>AI Weather</span>
-        </a>
-        <a href="#" class="nav-item" data-tab="disease-ai">
-          <i class="fa-solid fa-microscope"></i>
-          <span>Crop Disease AI</span>
         </a>
         <a href="#" class="nav-item" data-tab="logs">
           <i class="fa-solid fa-file-shield"></i>
@@ -281,8 +273,9 @@
                   <h4 id="security-state-header">Intrusion Shield Active</h4>
                   <p id="security-state-desc">PIR sensors monitoring perimeter fencing. Live alarm feed active.</p>
                 </div>
-                <div class="security-actions" style="display: flex; justify-content: center; width: 100%;">
-                  <button id="btn-buzzer-toggle" class="btn-outline" style="width: 100%; max-width: 200px;"><i class="fa-solid fa-volume-high"></i> Mute Buzzer</button>
+                <div class="security-actions">
+                  <button id="btn-test-pir" class="btn-secondary"><i class="fa-solid fa-person-running"></i> Simulate Breach</button>
+                  <button id="btn-buzzer-toggle" class="btn-outline"><i class="fa-solid fa-volume-high"></i> Mute Buzzer</button>
                 </div>
               </div>
             </div>
@@ -562,209 +555,6 @@
           </div>
         </section>
 
-        <!-- Tab: AI Weather Intelligence -->
-        <section id="tab-ai-weather" class="tab-view">
-          <div class="tab-header-title">
-            <div class="tab-header-with-action">
-              <div>
-                <h2><i class="fa-solid fa-brain" style="color: #a78bfa; margin-right: 8px;"></i>AI Weather Intelligence</h2>
-                <p>AI-powered weather prediction & smart irrigation advisory to save water and electricity.</p>
-              </div>
-              <div class="ai-header-actions">
-                <button id="ai-detect-location-btn" class="btn-secondary" style="font-size: 0.78rem;"><i class="fa-solid fa-location-crosshairs"></i> Detect Location</button>
-                <button id="ai-manual-refresh-btn" class="btn-secondary" style="font-size: 0.78rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
-                <span class="ai-refresh-badge"><i class="fa-solid fa-clock"></i> Next update: <strong id="ai-refresh-countdown">15:00</strong></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Loading Overlay -->
-          <div id="ai-weather-loading" class="ai-loading-overlay hidden">
-            <div class="ai-loading-spinner"><i class="fa-solid fa-satellite-dish fa-spin"></i></div>
-            <span>Fetching weather intelligence...</span>
-          </div>
-
-          <span id="ai-location-status" class="location-status"></span>
-
-          <!-- Row 1: Current Conditions + Daily Forecast -->
-          <div class="ai-weather-grid">
-            <!-- Current Conditions Card -->
-            <div class="card ai-card" style="grid-column: span 5;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-cloud-sun" style="color: #f97316;"></i> Current Conditions</h3>
-                <span class="badge badge-live">Live</span>
-              </div>
-              <div class="card-body" id="ai-current-conditions">
-                <div class="advisory-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading weather data...</p></div>
-              </div>
-            </div>
-
-            <!-- 3-Day Forecast -->
-            <div class="card ai-card" style="grid-column: span 7;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-calendar-days" style="color: #06b6d4;"></i> 3-Day Forecast</h3>
-              </div>
-              <div class="card-body" id="ai-daily-forecast" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="advisory-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading forecast...</p></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 2: Rain Prediction Timeline -->
-          <div class="ai-weather-grid" style="margin-top: 20px;">
-            <div class="card ai-card" style="grid-column: span 12;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-timeline" style="color: #3b82f6;"></i> 24-Hour Rain Prediction Timeline</h3>
-                <span class="badge" style="background: rgba(59,130,246,0.15); color: #60a5fa;">Hourly Forecast</span>
-              </div>
-              <div class="card-body" id="ai-rain-timeline" style="overflow-x: auto; padding-bottom: 5px;">
-                <div class="advisory-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Analyzing precipitation data...</p></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 3: AI Advisory + Savings -->
-          <div class="ai-weather-grid" style="margin-top: 20px;">
-            <!-- AI Irrigation Advisory -->
-            <div class="card ai-card" style="grid-column: span 8;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-robot" style="color: #a78bfa;"></i> AI Irrigation Advisory</h3>
-                <span class="badge" style="background: rgba(167,139,250,0.15); color: #a78bfa;"><i class="fa-solid fa-brain"></i> Smart Engine</span>
-              </div>
-              <div class="card-body ai-advisory-area" id="ai-advisory-cards">
-                <div class="advisory-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Generating recommendations...</p></div>
-              </div>
-            </div>
-
-            <!-- Savings Estimator -->
-            <div class="card ai-card" style="grid-column: span 4;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-piggy-bank" style="color: #10b981;"></i> AI Savings</h3>
-              </div>
-              <div class="card-body ai-savings-panel">
-                <div class="ai-savings-item water">
-                  <div class="savings-icon-wrap"><i class="fa-solid fa-droplet"></i></div>
-                  <div class="savings-info">
-                    <span class="savings-val" id="ai-savings-water">0L</span>
-                    <span class="savings-label">Water Saved by AI</span>
-                  </div>
-                </div>
-                <div class="ai-savings-item electricity">
-                  <div class="savings-icon-wrap"><i class="fa-solid fa-bolt"></i></div>
-                  <div class="savings-info">
-                    <span class="savings-val" id="ai-savings-electricity">0 kWh</span>
-                    <span class="savings-label">Electricity Saved</span>
-                  </div>
-                </div>
-                <div class="ai-savings-item skipped">
-                  <div class="savings-icon-wrap"><i class="fa-solid fa-forward"></i></div>
-                  <div class="savings-info">
-                    <span class="savings-val" id="ai-savings-skipped">0</span>
-                    <span class="savings-label">Irrigations Deferred</span>
-                  </div>
-                </div>
-                <div class="ai-savings-footer">
-                  <i class="fa-solid fa-leaf"></i> Savings calculated from AI-deferred irrigations when rain was predicted.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 4: 48-Hour Forecast Chart -->
-          <div class="ai-weather-grid" style="margin-top: 20px; margin-bottom: 25px;">
-            <div class="card ai-card chart-card" style="grid-column: span 12;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-chart-area" style="color: #f97316;"></i> 48-Hour Forecast Trends</h3>
-              </div>
-              <div class="card-body" style="height: 320px;">
-                <canvas id="chart-ai-forecast"></canvas>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Tab: Crop Disease AI -->
-        <section id="tab-disease-ai" class="tab-view">
-          <div class="tab-header-title">
-            <div class="tab-header-with-action">
-              <div>
-                <h2><i class="fa-solid fa-microscope" style="color: var(--primary); margin-right: 8px;"></i>Crop Disease AI Analysis</h2>
-                <p>Upload a photo of a crop to detect diseases and receive voice-guided treatment instructions.</p>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 25px;">
-            <h3 style="margin-bottom: 15px; color: var(--text-main); font-size: 1.1rem;"><i class="fa-solid fa-list-check" style="color: var(--green-accent);"></i> Supported AI Crop Models</h3>
-            <div class="crop-grid" id="disease-supported-crops">
-              <!-- Programmatically populated in ai-disease.js -->
-            </div>
-          </div>
-
-          <div class="dashboard-grid">
-            <div class="card" style="grid-column: span 6;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-camera"></i> Image Upload / Capture</h3>
-              </div>
-              <div class="card-body">
-                <div class="disease-upload-container" id="disease-upload-area">
-                  <input type="file" id="disease-image-input" accept="image/*" capture="environment" class="hidden">
-                  <div class="disease-upload-placeholder" id="disease-upload-placeholder">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
-                    <p>Click or tap to upload / capture image</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Supports mobile camera</p>
-                  </div>
-                  <img id="disease-image-preview" class="hidden" alt="Crop Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--border-radius-sm);">
-                </div>
-                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                  <button id="btn-reselect-image" class="btn-secondary hidden" style="padding: 10px 20px;"><i class="fa-solid fa-rotate-left"></i> Reselect</button>
-                  <button id="btn-analyze-disease" class="btn-primary" disabled style="width: auto; padding: 10px 30px;">
-                    <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Crop</span>
-                    <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="card" style="grid-column: span 6;">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-clipboard-list" style="color: var(--green-accent);"></i> Diagnosis & Instructions</h3>
-                <button id="btn-listen-instructions" class="btn-secondary hidden" style="padding: 6px 12px; font-size: 0.85rem;"><i class="fa-solid fa-volume-high"></i> Listen</button>
-              </div>
-              <div class="card-body" style="position: relative; min-height: 250px; display: flex; flex-direction: column;">
-                
-                <div id="disease-initial-state" class="disease-state-view" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                  <i class="fa-solid fa-leaf" style="font-size: 3rem; color: rgba(255,255,255,0.1); margin-bottom: 15px;"></i>
-                  <p style="color: var(--text-muted); text-align: center;">Upload an image and click analyze to see results here.</p>
-                </div>
-
-                <div id="disease-loading-state" class="disease-state-view hidden" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                  <i class="fa-solid fa-microscope fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                  <p style="color: var(--text-main); text-align: center;">AI is analyzing crop features...</p>
-                </div>
-
-                <div id="disease-result-state" class="disease-state-view hidden" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;">
-                  <div class="diagnosis-badge" id="diagnosis-name-badge" style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red-accent); color: white; padding: 8px 16px; border-radius: 30px; font-weight: bold;">
-                    Detected: <strong id="diagnosis-name">Unknown</strong>
-                  </div>
-                  <div style="width: 100%; margin-top: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 0.85rem; color: var(--text-muted);">Confidence Score:</span>
-                    <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
-                      <div id="diagnosis-confidence-bar" style="height: 100%; width: 0%; background: var(--green-accent); transition: width 1s ease;"></div>
-                    </div>
-                    <span id="diagnosis-confidence-text" style="font-size: 0.85rem; font-weight: bold; color: var(--green-accent);">0%</span>
-                  </div>
-                  <h4 style="margin-bottom: 15px; color: var(--text-main); font-size: 1rem;"><i class="fa-solid fa-kit-medical" style="color: var(--red-accent);"></i> Recommended Treatment Plan</h4>
-                  <div id="diagnosis-instructions" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--border-radius-sm); border-left: 3px solid var(--primary); width: 100%;">
-                    <!-- Instructions injected here -->
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- Tab: System Logs -->
         <section id="tab-logs" class="tab-view">
           <div class="tab-header-title">
@@ -1035,17 +825,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- TensorFlow and Teachable Machine -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-
   <!-- Application Modules -->
-  <script src="js/firebase-config.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
-  <script src="js/database.js?v=2"></script>
-  <script src="js/charts.js?v=2"></script>
-  <script src="js/reports.js?v=2"></script>
-  <script src="js/ai-weather.js?v=2"></script>
-  <script src="js/ai-disease.js?v=2"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/reports.js"></script>
 </body>
 </html>

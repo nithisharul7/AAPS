@@ -23,9 +23,57 @@ document.addEventListener("DOMContentLoaded", () => {
   const confidenceText = document.getElementById("diagnosis-confidence-text");
   const instructionsContainer = document.getElementById("diagnosis-instructions");
   const btnListen = document.getElementById("btn-listen-instructions");
+  
+  // Supported Crops Grid
+  const supportedCropsGrid = document.getElementById("disease-supported-crops");
 
   let currentImageFile = null;
   let analysisResultText = ""; // Plain text for TTS
+
+  // --- Render Supported Crops ---
+  function renderSupportedCrops() {
+    if (!supportedCropsGrid) return;
+    
+    const crops = [
+      { name: "Tomato", icon: "fa-solid fa-apple-whole", desc: "Mosaic Virus & Healthy" },
+      { name: "Strawberry", icon: "fa-solid fa-seedling", desc: "Leaf Scorch & Healthy" },
+      { name: "Squash", icon: "fa-solid fa-leaf", desc: "Powdery Mildew & Healthy" },
+      { name: "Soybean", icon: "fa-solid fa-seedling", desc: "Healthy Status" }
+    ];
+
+    crops.forEach(crop => {
+      const card = document.createElement("div");
+      card.className = "crop-card";
+      card.style.cursor = "default"; // Override pointer since it's just for display
+      card.innerHTML = `
+        <div class="crop-visual-box"><i class="${crop.icon}"></i></div>
+        <h3>${crop.name}</h3>
+        <div class="crop-moisture-val" style="font-size: 0.85rem; margin-top: 5px; color: var(--text-main);">${crop.desc}</div>
+        <div class="crop-moisture-label" style="margin-top: 5px;">Supported States</div>
+      `;
+      supportedCropsGrid.appendChild(card);
+    });
+  }
+
+  renderSupportedCrops();
+
+  // --- Teachable Machine Initialization ---
+  const URL = "assets/tm-my-image-model/";
+  let model, maxPredictions;
+
+  async function initModel() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+      try {
+          model = await tmImage.load(modelURL, metadataURL);
+          maxPredictions = model.getTotalClasses();
+          console.log("Teachable Machine Model loaded successfully");
+      } catch (e) {
+          console.error("Error loading TM model:", e);
+      }
+  }
+
+  initModel();
 
   // --- 1. Image Upload & Preview ---
   
@@ -137,77 +185,112 @@ document.addEventListener("DOMContentLoaded", () => {
         window.speechSynthesis.cancel();
       }
 
-      // Simulate Network/AI processing delay (2.5 seconds)
+      // Call the real diagnosis function
       setTimeout(() => {
-        processMockDiagnosis();
-      }, 2500);
+        processRealDiagnosis();
+      }, 500); // small delay for UI to show loading
     });
   }
 
-  function processMockDiagnosis() {
+  async function processRealDiagnosis() {
+    if (!model) {
+      alert("Model not loaded yet or missing weights.bin. Please wait or check the model files.");
+      resetResultView();
+      // Restore button UI
+      btnAnalyze.disabled = false;
+      btnAnalyze.querySelector(".btn-text").classList.remove("hidden");
+      btnAnalyze.querySelector(".spinner").classList.add("hidden");
+      btnReselect.disabled = false;
+      return;
+    }
+
+    try {
+      const prediction = await model.predict(imagePreview);
+      
+      let highestProb = 0;
+      let bestClass = "";
+      
+      for (let i = 0; i < maxPredictions; i++) {
+          if (prediction[i].probability > highestProb) {
+              highestProb = prediction[i].probability;
+              bestClass = prediction[i].className;
+          }
+      }
+
+      let resultName, score, instructions;
+      
+      if (highestProb < 0.60) {
+          resultName = "Invalid Photo / Unknown";
+          score = Math.round(highestProb * 100);
+          instructions = "The uploaded photo does not appear to match any known crop or leaf patterns. Please ensure you upload a clear photo of the affected plant leaf.";
+      } else {
+          resultName = bestClass.replace(/___/g, " - ").replace(/_/g, " ");
+          score = Math.round(highestProb * 100);
+          
+          if (bestClass.includes("healthy")) {
+              instructions = "1. No disease detected.<br>2. Maintain current irrigation and fertilization schedules.<br>3. Continue routine monitoring.";
+          } else if (bestClass.includes("Tomato_mosaic_virus")) {
+              instructions = "1. Isolate the affected crop area if possible.<br>2. Remove and destroy infected plants immediately.<br>3. Disinfect tools and wash hands after handling infected plants to prevent spread.";
+          } else if (bestClass.includes("Leaf_scorch")) {
+              instructions = "1. Ensure adequate watering but avoid waterlogging.<br>2. Check for salt buildup in the soil.<br>3. Apply mulch to retain soil moisture and regulate temperature.";
+          } else if (bestClass.includes("Powdery_mildew")) {
+              instructions = "1. Prune heavily affected leaves to improve air circulation.<br>2. Apply a sulfur or potassium bicarbonate fungicide.<br>3. Avoid overhead watering to keep foliage dry.";
+          } else {
+              instructions = "1. Monitor the plant closely.<br>2. Consult a local agricultural extension if symptoms worsen.";
+          }
+      }
+
+      // Construct TTS string (remove HTML tags)
+      analysisResultText = `Diagnosis complete. Detected: ${resultName}. Confidence score is ${score} percent. Treatment Plan: ` + 
+                           instructions.replace(/<br>/g, " ").replace(/\d\./g, "");
+
+      // Update DOM
+      stateLoading.classList.add("hidden");
+      stateResult.classList.remove("hidden");
+      
+      diagnosisName.textContent = resultName;
+      
+      // Color coding based on result
+      const badge = document.getElementById("diagnosis-name-badge");
+      if (resultName.toLowerCase().includes("healthy")) {
+        badge.style.background = "rgba(34, 197, 94, 0.15)";
+        badge.style.borderColor = "var(--green-accent)";
+      } else if (resultName === "Invalid Photo / Unknown") {
+        badge.style.background = "rgba(255, 152, 0, 0.15)";
+        badge.style.borderColor = "#ff9800"; // Orange
+      } else {
+        badge.style.background = "rgba(239, 68, 68, 0.15)";
+        badge.style.borderColor = "var(--red-accent)";
+      }
+      
+      // Animate bar
+      confidenceBar.style.width = "0%";
+      setTimeout(() => {
+        confidenceBar.style.width = `${score}%`;
+        confidenceText.textContent = `${score}%`;
+      }, 100);
+      
+      instructionsContainer.innerHTML = instructions;
+      
+      // Show Listen Button
+      btnListen.classList.remove("hidden");
+      
+      // Optional: Log it
+      if (window.logSystemEvent) {
+        window.logSystemEvent(`AI Disease Analysis run: Detected ${resultName} (${score}%)`, "system");
+      }
+
+    } catch (e) {
+      console.error("Prediction error", e);
+      alert("Error analyzing image.");
+      resetResultView();
+    }
+
     // Restore button UI
     btnAnalyze.disabled = false;
     btnAnalyze.querySelector(".btn-text").classList.remove("hidden");
     btnAnalyze.querySelector(".spinner").classList.add("hidden");
     btnReselect.disabled = false;
-    
-    // Generate mock results (randomize for demo purposes)
-    const diseases = [
-      {
-        name: "Leaf Blight (Early Stage)",
-        score: Math.floor(Math.random() * 15) + 80, // 80-95%
-        instructions: "1. Isolate the affected crop area if possible.<br>2. Apply a copper-based fungicide spray to prevent further spread.<br>3. Temporarily reduce irrigation to lower ambient soil moisture in the zone."
-      },
-      {
-        name: "Powdery Mildew",
-        score: Math.floor(Math.random() * 10) + 85, // 85-95%
-        instructions: "1. Prune heavily affected leaves to improve air circulation.<br>2. Apply a sulfur or potassium bicarbonate fungicide.<br>3. Avoid overhead watering to keep foliage dry."
-      },
-      {
-        name: "Healthy Plant",
-        score: Math.floor(Math.random() * 5) + 94, // 94-99%
-        instructions: "1. No disease detected.<br>2. Maintain current irrigation and fertilization schedules.<br>3. Continue routine monitoring."
-      }
-    ];
-    
-    const result = diseases[Math.floor(Math.random() * diseases.length)];
-    
-    // Construct TTS string (remove HTML tags)
-    analysisResultText = `Diagnosis complete. Detected: ${result.name}. Confidence score is ${result.score} percent. Treatment Plan: ` + 
-                         result.instructions.replace(/<br>/g, " ").replace(/\d\./g, "");
-
-    // Update DOM
-    stateLoading.classList.add("hidden");
-    stateResult.classList.remove("hidden");
-    
-    diagnosisName.textContent = result.name;
-    
-    // Color coding based on result
-    const badge = document.getElementById("diagnosis-name-badge");
-    if (result.name === "Healthy Plant") {
-      badge.style.background = "rgba(34, 197, 94, 0.15)";
-      badge.style.borderColor = "var(--green-accent)";
-    } else {
-      badge.style.background = "rgba(239, 68, 68, 0.15)";
-      badge.style.borderColor = "var(--red-accent)";
-    }
-    
-    // Animate bar
-    confidenceBar.style.width = "0%";
-    setTimeout(() => {
-      confidenceBar.style.width = `${result.score}%`;
-      confidenceText.textContent = `${result.score}%`;
-    }, 100);
-    
-    instructionsContainer.innerHTML = result.instructions;
-    
-    // Show Listen Button
-    btnListen.classList.remove("hidden");
-    
-    // Optional: Log it
-    if (window.logSystemEvent) {
-      window.logSystemEvent(`AI Disease Analysis run: Detected ${result.name} (${result.score}%)`, "system");
-    }
   }
 
   // --- 3. Text-to-Speech Voice Instructions ---
